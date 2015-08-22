@@ -4,7 +4,7 @@
   <title><![CDATA[My Octopress Blog]]></title>
   <link href="http://ethernaut-io.github.io/atom.xml" rel="self"/>
   <link href="http://ethernaut-io.github.io/"/>
-  <updated>2015-08-22T13:53:09-04:00</updated>
+  <updated>2015-08-22T13:53:39-04:00</updated>
   <id>http://ethernaut-io.github.io/</id>
   <author>
     <name><![CDATA[Your Name]]></name>
@@ -12,23 +12,5 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[BGP FTW]]></title>
-    <link href="http://ethernaut-io.github.io/blog/2015/08/22/bgp-ftw/"/>
-    <updated>2015-08-22T13:53:02-04:00</updated>
-    <id>http://ethernaut-io.github.io/blog/2015/08/22/bgp-ftw</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Bgp Ftw]]></title>
-    <link href="http://ethernaut-io.github.io/blog/2015/08/22/BGP-FTW/"/>
-    <updated>2015-08-22T00:00:00-04:00</updated>
-    <id>http://ethernaut-io.github.io/blog/2015/08/22/BGP-FTW</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
   
 </feed>
