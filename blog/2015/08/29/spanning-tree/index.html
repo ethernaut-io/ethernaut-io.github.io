@@ -177,7 +177,7 @@
 
 <p>The root bridge will be elected based on the bridge identifier field.  Specifically, the device transmitting messages with the lowest value in this field will become the root of the topology.  This value is composed of the device’s priority (32678 by default, 4096 in the above frame) and MAC address.  Priority is a configurable value, and must be set in increments of 4096.  If priorities are equal, devices will fallback to evaluating MAC addresses.</p>
 
-<p>The integer lying between the priority and the MAC address is the VLAN ID for the spanning tree domain, which is necessary for per-VLAN spanning tree.  Not that this is a Cisco switch, with <strong>spanning-tree extend system-id configured</strong>.  In this situation, a root is elected for each VLAN.</p>
+<p>The integer lying between the priority and the MAC address is the VLAN ID for the spanning tree domain, which is necessary for per-VLAN spanning tree.  Note that this is a Cisco switch, with <strong>spanning-tree extend system-id configured</strong>.  In this situation, a root is elected for each VLAN.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
