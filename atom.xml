@@ -4,7 +4,7 @@
   <title>Ethernaut</title>
   <link href="http://ethernaut-io.github.io/atom.xml" rel="self"/>
   <link href="http://ethernaut-io.github.io/"/>
-  <updated>2015-08-23T01:41:16-04:00</updated>
+  <updated>2015-08-29T20:13:04-04:00</updated>
   <id>http://ethernaut-io.github.io/</id>
   <author>
     <name>Andrew</name>
@@ -12,5 +12,18 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Spanning Tree]]></title>
+    <link href="http://ethernaut-io.github.io/blog/2015/08/29/spanning-tree/"/>
+    <updated>2015-08-29T11:16:45-04:00</updated>
+    <id>http://ethernaut-io.github.io/blog/2015/08/29/spanning-tree</id>
+    <content type="html"><![CDATA[<p style='text-align: center;'>Often, it just works.  Why should you care about it?  STP kills loops.</p>
+
+
+<p></p>
+
+]]></content>
+  </entry>
   
 </feed>

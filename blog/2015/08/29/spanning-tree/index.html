@@ -1,0 +1,514 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spanning Tree - Ethernaut</title>
+  <meta name="author" content="andrew@ethernaut.io">
+
+  <!-- Causes trouble with per-article font implementations under /source/_includes/article.html
+  
+  <meta name="description" content="Spanning Tree Aug 29th, 2015 11:16 am Often, it just works. Why should you care about it? STP kills loops. Why dedicate a protocol to prevent loops &hellip;">
+  -->
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ethernaut-io.github.io/blog/2015/08/29/spanning-tree">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Ethernaut" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Poller+One" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Germania+One" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Fontdiner+Swanky" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Lato&subset=latin-ext" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Cardo&subset=latin-ext" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Sorts+Mill+Goudy" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Della+Respira" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=UnifrakturMaguntia&subset=all" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Arimo|EB+Garamond|PT+Sans+Caption&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<logo>
+
+<img src="/logo.png" alt="Website Logo. Upload to /source/logo.png ; disable in /source/_includes/logo.html" height="32px" width="32px">
+</logo>
+
+
+
+<body >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Ethernaut</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+<br>
+
+      
+        <form action="https://www.google.com/search" method="get">
+          <fieldset role="search">
+            <input type="hidden" name="q" value="site:ethernaut-io.github.io" />
+      
+      
+            <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+          </fieldset>
+        </form>
+  
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      
+        <h1 class="entry-title" style="font-family: ">Spanning Tree</h1>
+      
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-08-29T11:16:45-04:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:16 am</span></time>
+        
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content" style="font-family: ; font-size: "><p style='text-align: center;'>Often, it just works.  Why should you care about it?  STP kills loops.</p>
+
+
+<p></p>
+
+<!-- more -->
+
+
+<h2>Why dedicate a protocol to prevent loops in local area networks?</h2>
+
+
+<p>First, loops in most network topologies are bad.  The network’s job is to relay a datagram between two or more points, with the expectation that the datagram spends a finite amount of time on that network.  In IP based networks, this finite lifetime on the network is at least guaranteed with the use of TTL and the <a href="https://tools.ietf.org/html/rfc1812#section-5.3.1">explicit duty of IP forwarding devices</a> to discard packets with a value of zero in this field.  Conversely, Ethernet based networks have no such mechanism.  A loop at layer 2 has the potential to relay an Ethernet frame for an indefinite period of time.  Frames forwarded in perpetuity can be potentially amplified, consume resources, prevent topologies from stabilizing, and often cause full out disruption to the forwarding and control planes.</p>
+
+<h2>How does STP prevent loops?</h2>
+
+
+<p>Spanning tree implements a means for devices in a network to share information and determine a loop-free topology.  Each node shares its perspective of the network and eventually determines what local ports can safely forward frames without introducing a loop.</p>
+
+<p>Before beginning to forward frames (and potentially causing a loop), devices running spanning tree must first follow a series of steps to determine the network topology.</p>
+
+<h2>Bootstrapping the Topology</h2>
+
+
+<p>At the core of a spanning tree domain is the root bridge.  This device is responsible for determining time spent in convergence and how forwarding paths will be constructed.</p>
+
+<ol>
+<li><strong>Elect a root</strong>.  At first, all devices transmit messages, or Bridge Protocol Data Units, claiming to be the root of the topology.  These messages are addressed to a destination MAC of 01:80:C2:00:00:00 (notice that the least significant bit of the first octet is set to 1 – this is a multicast destination) and carry the following format:</li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Frame 1: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)
+</span><span class='line'>IEEE 802.3 Ethernet 
+</span><span class='line'>Logical-Link Control
+</span><span class='line'>Spanning Tree Protocol
+</span><span class='line'>    Protocol Identifier: Spanning Tree Protocol (0x0000)
+</span><span class='line'>    Protocol Version Identifier: Spanning Tree (0)
+</span><span class='line'>    BPDU Type: Configuration (0x00)
+</span><span class='line'>    BPDU flags: 0x01 (Topology Change)
+</span><span class='line'>        0... .... = Topology Change Acknowledgment: No
+</span><span class='line'>        .... ...1 = Topology Change: Yes
+</span><span class='line'>    Root Identifier: 4096 / 1 / 00:24:50:81:26:00
+</span><span class='line'>    Root Path Cost: 0
+</span><span class='line'>    Bridge Identifier: 4096 / 1 / 00:24:50:81:26:00
+</span><span class='line'>    Port identifier: 0x807f
+</span><span class='line'>    Message Age: 0
+</span><span class='line'>    Max Age: 20
+</span><span class='line'>    Hello Time: 2
+</span><span class='line'>    Forward Delay: 15</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The root bridge will be elected based on the bridge identifier field.  Specifically, the device transmitting messages with the lowest value in this field will become the root of the topology.  This value is composed of the device’s priority (32678 by default, 4096 in the above frame) and MAC address.  Priority is a configurable value, and must be set in increments of 4096.  If priorities are equal, devices will fallback to evaluating MAC addresses.</p>
+
+<p>The integer lying between the priority and the MAC address is the VLAN ID for the spanning tree domain, which is necessary for per-VLAN spanning tree.  Not that this is a Cisco switch, with <strong>spanning-tree extend system-id configured</strong>.  In this situation, a root is elected for each VLAN.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#Not a root bridge for VLAN 10
+</span><span class='line'>SWITCH1#sh spanning-tree vlan 10
+</span><span class='line'>
+</span><span class='line'>VLAN0010
+</span><span class='line'>  Spanning tree enabled protocol ieee
+</span><span class='line'>  Root ID    Priority    4106
+</span><span class='line'>             Address     0024.5081.2600
+</span><span class='line'>             Cost        2000
+</span><span class='line'>             Port        25 (FastEthernet0/23)
+</span><span class='line'>             Hello Time   1 sec  Max Age 10 sec  Forward Delay  4 sec
+</span><span class='line'>
+</span><span class='line'>  Bridge ID  Priority    32778  (priority 32768 sys-id-ext 10)
+</span><span class='line'>             Address     0019.556f.d700
+</span><span class='line'>             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+</span><span class='line'>             Aging Time 300
+</span><span class='line'>
+</span><span class='line'>Interface        Role Sts Cost      Prio.Nbr Type
+</span><span class='line'>---------------- ---- --- --------- -------- --------------------------------
+</span><span class='line'>Fa0/23           Root FWD 2000      128.25   P2p
+</span><span class='line'>Fa0/24           Altn BLK 2000      128.26   P2p
+</span><span class='line'>
+</span><span class='line'>#Is a root bridge for VLAN 100
+</span><span class='line'>SWITCH#sh spanning-tree vlan 100
+</span><span class='line'>
+</span><span class='line'>VLAN0100
+</span><span class='line'>  Spanning tree enabled protocol ieee
+</span><span class='line'>  Root ID    Priority    4196
+</span><span class='line'>             Address     0019.556f.d700
+</span><span class='line'>             This bridge is the root
+</span><span class='line'>             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+</span><span class='line'>
+</span><span class='line'>  Bridge ID  Priority    4196   (priority 4096 sys-id-ext 100)
+</span><span class='line'>             Address     0019.556f.d700
+</span><span class='line'>             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+</span><span class='line'>             Aging Time 15
+</span><span class='line'>
+</span><span class='line'>Interface        Role Sts Cost      Prio.Nbr Type
+</span><span class='line'>---------------- ---- --- --------- -------- --------------------------------
+</span><span class='line'>Fa0/23           Desg FWD 2000      128.25   P2p
+</span><span class='line'>Fa0/24           Desg FWD 2000      128.26   P2p</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li><strong>Elect a root port</strong>.  Once a root bridge is elected, it becomes necessary for all devices to determine the lowest cost path back towards the root.  This is achieved with the following steps:
+
+<ul>
+<li><p>Once elected, the root bridge will begin sending configuration BPDUs referred to as <em>hello messages</em> at a default interval of 2 seconds.  The Root Path Cost field in these BPDUs will be 0 when leaving the root switch.</p></li>
+<li><p>Devices directly connected to the root will receive these messages and elect a single port on which to send datagrams back towards the root referred to as the Root Port.  The port receiving BPDUs with the lowest Root Path Cost is determined to be the <strong>Root Port</strong>.  If Root Path Cost is equal across 2 or more ports, Bridge ID, port Priority, or physical port number is used to break the tie.</p></li>
+<li><p>Only the root bridge originates the BPDU configuration messages.  Non-root devices are responsible for propagating these messages towards the edges of the topology.  Before propagating a BPDU configuration message, a non-root device will write its bridge ID into the bridge identifier field, rewrite the port identifier field, increment the Root Path Cost field with the cost of its Root Port, and increment the message age.  Message age is similar to IP TTL in that it is incremented every time a message is propagated (much like a hop).  This field also indicates to a non-root device how far it is away from the actual root of the topology.</p></li>
+<li><p>Only hello messages received on Root Ports are propagated.  These BPDU configuration messages are only propagated via designated ports.  The root device will continue to send BPDU configuration messages at an interval of the hello timer.  These messages serve as a keepalive mechanism – non-root devices can assume that they have lost contact with the root device if a configuration BPDU is not received within the max age timer.</p></li>
+</ul>
+</li>
+</ol>
+
+
+<h2>How is cost determined?</h2>
+
+
+<p>Cost is generally determined based on the interface speed of a port.  These values have been updated continuously as interface speeds have increased (1 and 10GE interfaces had the same port cost at the 1998 release of the <a href="http://speed.cis.nctu.edu.tw/~ydlin/course/cn/exp/Exp_NBL/stp/802.1D-1998.pdf">801.2D specification</a>).  The most recent costs (<a href="http://standards.ieee.org/getieee802/download/802.1D-2004.pdf">802.1D-2004</a>) acommodate ports with higher speeds.  Listed below are the default costs for both specifications:</p>
+
+<pre><code>801.d-1998
+10Mbps  = 100
+100mbps = 19
+1Gbps   = 4
+10Gbps  = 2
+
+801.d-2004
+10Mbps  = 2000000  
+100Mbps = 200000  
+1Gbps   = 20000   
+10Gbps  = 2000    
+</code></pre>
+
+<p>On Cisco devices, you can specify whether to use the older or newer standards.  This is done with the global command <strong>spanning-tree pathcost method [ short | long ]</strong>.</p>
+
+<ol>
+<li><strong>Elect a Designated Port</strong>. Only a single device may propagate BPDU configuration messages from the root onto a LAN segment.  That device, and its port on that segment, are elected based on Root Path Cost.  The physical port ID is used if a tie exists.  All remaining ports on the designated device transition to blocking.</li>
+</ol>
+
+
+<h2>Port States</h2>
+
+
+<p>One catch with spanning tree is that it must communicate with other devices to determine the network’s topology while not introducing a loop.  To do this, a device will transition ports through a series of states.  A port will wait for a period of the Forward Delay timer before transitioning.</p>
+
+<ul>
+<li><strong>Blocking</strong>: Port does not forward any frames or record source MAC addresses of received frames.</li>
+<li><strong>Listening</strong>: Port does not forward any frames or record source MAC addresses of received frames.  In this state, the device will process BPDU’s received.</li>
+<li><strong>Learning</strong>: Port does not forward any frames, but does record source MAC addresses into the MAC address table.  BPDU frames are processed.</li>
+<li><strong>Forwarding</strong>: Port is sending and receiving data.  BPDUs are processed regularly.  This state can only be reached by transitioning through both listening and learning.  A transition from blocking directly to forwarding cannot occur.  Since two states must be transitioned through before reaching forwarding, we observe that it takes 2xForward Delay for a port to transition from blocking to forwarding and transmit and receive frames.</li>
+<li><strong>Disabled</strong>: Port is administratively down.</li>
+</ul>
+
+
+<h2>Convergence</h2>
+
+
+<p>Topology changes in a network are inevitable.  Devices may fail, the topology may be scaled, or cabling may be damaged – these are facts of life.  Spanning tree was designed to propagate notice of changes throughout the network so that the topology can be re-computed on every device.</p>
+
+<p>When a change is detected, a non-root device will send a BPDU out its root port with the Topology Change Notification (TCN) flag bit set. It will send this BPDU continuously at its hello interval until it receives a BPDU frame with the Topology Change Acknowledgement bit set.</p>
+
+<p>It is the responsibility of the designated switch on a segment to acknowledge a TCN BPDU with TCA BPDU.  TCN BPDUs are then propagated back towards the root by all devices in the path.  An acknowledgement is expected at every propagation point towards the root.</p>
+
+<p>Once the root has received the TCN BPDU, it is then responsible for sending out a notification to all devices in the network to rapidly age out MAC address entries.  This BPDU is sent out with the TC flag bit set.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Frame 2: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)
+</span><span class='line'>IEEE 802.3 Ethernet 
+</span><span class='line'>Logical-Link Control
+</span><span class='line'>Spanning Tree Protocol
+</span><span class='line'>    Protocol Identifier: Spanning Tree Protocol (0x0000)
+</span><span class='line'>    Protocol Version Identifier: Spanning Tree (0)
+</span><span class='line'>    BPDU Type: Configuration (0x00)
+</span><span class='line'>    BPDU flags: 0x01 (Topology Change)
+</span><span class='line'>        0... .... = Topology Change Acknowledgment: No
+</span><span class='line'>        .... ...1 = Topology Change: Yes
+</span><span class='line'>    Root Identifier: 8192 / 1 / 00:24:50:81:26:00
+</span><span class='line'>        Root Bridge Priority: 8192
+</span><span class='line'>        Root Bridge System ID Extension: 1
+</span><span class='line'>        Root Bridge System ID: Cisco_81:26:00 (00:24:50:81:26:00)
+</span><span class='line'>    Root Path Cost: 0
+</span><span class='line'>    Bridge Identifier: 8192 / 1 / 00:24:50:81:26:00
+</span><span class='line'>    Port identifier: 0x807f
+</span><span class='line'>    Message Age: 0
+</span><span class='line'>    Max Age: 20
+</span><span class='line'>    Hello Time: 2
+</span><span class='line'>    Forward Delay: 15</span></code></pre></td></tr></table></div></figure>
+
+
+<p>All non-root devices receiving this message will inspect the value of the Forward Delay field in the BPDU frame, and apply it as a timer for entries in the device’s MAC address table.  Any MAC addresses not seen in the source of a frame for the period of Forward Delay will be removed from the MAC address table.  Note that the typical timer for this is 300 seconds:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>SWITCH#show mac address-table aging-time
+</span><span class='line'>Global Aging Time:  300
+</span><span class='line'>Vlan    Aging Time
+</span><span class='line'>----    ----------</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h2>Timers</h2>
+
+
+<p>Spanning tree uses 3 distinct timers, all of which are configured on the root device:</p>
+
+<ul>
+<li><strong>Hello Timer</strong>: This is the interval at which the root device sends out configuration BPDUs.</li>
+<li><strong>Forward Delay Timer</strong>: Time that a transitioning port must spend in the listening and learning states.</li>
+<li><strong>Max Age Timer</strong>: The maximum amount of time that a root port will remain forwarding without receiving a configuration BPDU.  If this timer expires, the port will transition to a listening state.</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#Root Device
+</span><span class='line'>spanning-tree mode pvst
+</span><span class='line'>spanning-tree extend system-id
+</span><span class='line'>spanning-tree vlan 1-4094 priority 4096
+</span><span class='line'>spanning-tree vlan 1-4094 hello-time 1
+</span><span class='line'>spanning-tree vlan 1-4094 forward-time 4
+</span><span class='line'>spanning-tree vlan 1-4094 max-age 10
+</span><span class='line'>
+</span><span class='line'>#Non-root Device
+</span><span class='line'>SWITCH#sh spanning-tree vlan 1
+</span><span class='line'>
+</span><span class='line'>VLAN0001
+</span><span class='line'>  Spanning tree enabled protocol ieee
+</span><span class='line'>  Root ID    Priority    4097
+</span><span class='line'>             Address     0024.5081.2600
+</span><span class='line'>             Cost        2000
+</span><span class='line'>             Port        25 (FastEthernet0/23)
+</span><span class='line'>             Hello Time   1 sec  Max Age 10 sec  Forward Delay  4 sec</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h2>More</h2>
+
+
+<p>The biggest drawback with the 802.1d version of STP is that it takes a lot of time to converge.  In some cases, it may take between 30 and 50 seconds for a port to transition to forwarding.  This was addressed in the later standard, 802.1w, or Rapid Spanning Tree Protocol (RSTP).  Likely a good topic for another post.</p>
+</div>
+
+
+  <footer class="page-footer">
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Text authored by <span class="fn">andrew@ethernaut.io</span></span>
+
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-08-29T11:16:45-04:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:16 am</span></time>
+      
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ethernaut-io.github.io/blog/2015/08/29/spanning-tree/" data-via="" data-counturl="http://ethernaut-io.github.io/blog/2015/08/29/spanning-tree/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Website copyright &copy; 2015 - andrew@ethernaut.io |
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> | Themed with <a href="https://github.com/TheChymera/Koenigspress">Königspress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
