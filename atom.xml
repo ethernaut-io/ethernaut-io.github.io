@@ -4,7 +4,7 @@
   <title>Ethernaut</title>
   <link href="http://ethernaut-io.github.io/atom.xml" rel="self"/>
   <link href="http://ethernaut-io.github.io/"/>
-  <updated>2015-08-29T22:36:01-04:00</updated>
+  <updated>2015-09-20T21:46:42-04:00</updated>
   <id>http://ethernaut-io.github.io/</id>
   <author>
     <name>Andrew</name>
@@ -12,6 +12,17 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[OSPF Adjacencies]]></title>
+    <link href="http://ethernaut-io.github.io/blog/2015/09/07/ospf-adjacencies/"/>
+    <updated>2015-09-07T11:07:35-04:00</updated>
+    <id>http://ethernaut-io.github.io/blog/2015/09/07/ospf-adjacencies</id>
+    <content type="html"><![CDATA[<p style='text-align: center;'>Becoming neighbors, sharing of databases, and of message types.</p>
+
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Spanning Tree]]></title>

@@ -1,0 +1,488 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>OSPF Adjacencies - Ethernaut</title>
+  <meta name="author" content="andrew@ethernaut.io">
+
+  <!-- Causes trouble with per-article font implementations under /source/_includes/article.html
+  
+  <meta name="description" content="OSPF Adjacencies Sep 7th, 2015 11:07 am Becoming neighbors, sharing of databases, and of message types. Why are neighbor states necessary? Every &hellip;">
+  -->
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ethernaut-io.github.io/blog/2015/09/07/ospf-adjacencies">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Ethernaut" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Poller+One" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Germania+One" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Fontdiner+Swanky" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Lato&subset=latin-ext" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Cardo&subset=latin-ext" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Sorts+Mill+Goudy" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Della+Respira" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=UnifrakturMaguntia&subset=all" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Arimo|EB+Garamond|PT+Sans+Caption&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<logo>
+
+<img src="/logo.png" alt="Website Logo. Upload to /source/logo.png ; disable in /source/_includes/logo.html" height="32px" width="32px">
+</logo>
+
+
+
+<body >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Ethernaut</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+<br>
+
+      
+        <form action="https://www.google.com/search" method="get">
+          <fieldset role="search">
+            <input type="hidden" name="q" value="site:ethernaut-io.github.io" />
+      
+      
+            <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+          </fieldset>
+        </form>
+  
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      
+        <h1 class="entry-title" style="font-family: ">OSPF Adjacencies</h1>
+      
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-09-07T11:07:35-04:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:07 am</span></time>
+        
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content" style="font-family: ; font-size: "><p style='text-align: center;'>Becoming neighbors, sharing of databases, and of message types.</p>
+
+
+<!-- more -->
+
+
+<h2>Why are neighbor states necessary?</h2>
+
+
+<p>Every node running an OSPF process must maintain some level of state, as well as exchange that state with its neighbors.  In order to properly exchange state, nodes must transition through a set of neighbor states in order to validate one another&rsquo;s configuration and the sequence in which to share messages.</p>
+
+<h2>OSPF Message Types</h2>
+
+
+<p>To understand the different neighbor states, it&rsquo;s important to first understand the OSPF message types.  There are 5 different message types:</p>
+
+<p><strong>Hello</strong> A type 1 packet.  Used as a keepalive message and for dynamic discovery of other nodes via the multicast destination 224.0.0.5 (All OSPF Routers destination).  There are 3 fields within the hello packet that must be agreed upon by all neighbors: Dead Interval, Network Mask, and Hello Interval.</p>
+
+<p>An example hello packet.  Note that the sending node has both 10.99.0.12 and 10.99.0.13 listed in the &lsquo;Active Neighbor&rsquo; fields.  This means the sending node has seen hello messages from both of these nodes.  This allows a node to confirm that bidirectional connectivity is functioning.  If a node sees its router-id in the hello message from another node, it can safely assume that its own hello messages are being received.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Frame 283: 98 bytes on wire (784 bits), 98 bytes captured (784 bits)
+</span><span class='line'>Ethernet II, Src: Cisco_fa:bf:71 (00:16:9d:fa:bf:71), Dst: IPv4mcast_05 (01:00:5e:00:00:05)
+</span><span class='line'>Internet Protocol Version 4, Src: 10.230.0.11 (10.230.0.11), Dst: 224.0.0.5 (224.0.0.5)
+</span><span class='line'>Open Shortest Path First
+</span><span class='line'>    OSPF Header
+</span><span class='line'>    OSPF Hello Packet
+</span><span class='line'>        Network Mask: 255.255.255.0 (255.255.255.0)
+</span><span class='line'>        Hello Interval [sec]: 10
+</span><span class='line'>        Options: 0x12 (L, E)
+</span><span class='line'>        Router Priority: 255
+</span><span class='line'>        Router Dead Interval [sec]: 40
+</span><span class='line'>        Designated Router: 10.230.0.11 (10.230.0.11)
+</span><span class='line'>        Backup Designated Router: 10.230.0.12 (10.230.0.12)
+</span><span class='line'>        Active Neighbor: 10.99.0.12 (10.99.0.12)
+</span><span class='line'>        Active Neighbor: 10.99.0.13 (10.99.0.13)
+</span><span class='line'>    OSPF LLS Data Block</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Database Description, or DBD</strong> A type 2 packet.  Sent during initial stages of an adjacency.  These packets contain LSA headers, which are used to describe the contents of a node&rsquo;s OSPF database, or LSDB.</p>
+
+<p><strong>Link State Request</strong> A type 3 packet.  This message is used by nodes to request certain portions of another node&rsquo;s database.</p>
+
+<p><strong>Link State Update</strong> A type 4 packet.  Used to message the full detail of LSAs.  Sent via unicast or to the All OSPF routers address, 224.0.0.5.</p>
+
+<p><strong>Link State Acknowledgement</strong> A type 5 packet.  Used to acknowledge the receipt of a LSU.  Sent via unicast, to a the All OSPF routers address, or to the All DR Routers address.</p>
+
+<h2>Would you be my neighbor?</h2>
+
+
+<p>All adjacencies of an OSPF process exist in a neighbor state.  Some neighbor states are transient and some are indefinite.</p>
+
+<p><strong>Down.</strong>  This state is typical of when a peer is manually configured, but is not responding to hello attempts.  Also seen in instances in which a dead timer has expired.</p>
+
+<p><strong>Attempt.</strong>  The initial state of a manually configured neighbor.  In this state, the OSPF process is attempting to form an adjacency with the neighbor through unicast hello messages (keep in mind that OSPF uses the multicast address of 224.0.0.5 for sending and receiving hellos).  .  If the adjacency fails to establish within the dead interval timer, the neighbor transitions to down.</p>
+
+<p><strong>Init.</strong>  If a hello packet has been seen from a neighbor, but the local router’s ID is not seen in the hello packet.  Essentially, this state means that a valid hello packet has been seen, but bidirectional communication has not been confirmed.</p>
+
+<p><strong>2-Way.</strong>  A valid hello packet has been seen from a neighbor, and the local router’s ID is seen in the hello packet’s Active Neighbor field.  Note that two nodes on a multiaccess segment that are neither DR or BDR will not progress past this state with one another.</p>
+
+<p><strong>ExStart.</strong>  This state begins the exchange of Database Description messages (DBD).  Neighbors that intend to become fully adjacent will use this state to exchange DBD messages.<br/>
+Master/Slave.  The ExStart state precedes the actual exchange of routing information.  In order to synchronize this information across two neighbors, it’s necessary for both to agree upon sequencing and the order in which both will communicate their databases.  This is determined by the master/slave election.<br/>
+The neighbor with the numerically highest router ID will be elected as the master and will set the MS (Master/Slave) bit in all DBD messages sent to the slave.  Router IDs are set in the OSPF header of every packet, and are compared during this state.  A neighbor that considers itself the master of an adjacency will first transmit an empty DBD message indicating interface MTU, with the following bits set:</p>
+
+<ul>
+<li><strong>I-bit</strong>, or init bit: Indicates that this is the first packet sent in the DBD exchange.</li>
+<li><strong>M-bit</strong>, or more bit: Indicates that more DBD messages will follow.</li>
+<li><strong>MS-bit</strong>, or master/slave bit: When set, this bit indicates that the sender believes itself to be the master in the exchange.  When not set, indicates that the sender believes itself to be the slave.</li>
+</ul>
+
+
+<p>Example of a DBD message with the I, M, and MS bits set - this would be the first packet sent:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Frame 287: 78 bytes on wire (624 bits), 78 bytes captured (624 bits)
+</span><span class='line'>Ethernet II, Src: Cisco_ec:69:59 (00:15:2c:ec:69:59), Dst: Cisco_fa:bf:71 (00:16:9d:fa:bf:71)
+</span><span class='line'>Internet Protocol Version 4, Src: 10.230.0.12 (10.230.0.12), Dst: 10.230.0.11 (10.230.0.11)
+</span><span class='line'>Open Shortest Path First
+</span><span class='line'>    OSPF Header
+</span><span class='line'>    OSPF DB Description
+</span><span class='line'>        Interface MTU: 1500
+</span><span class='line'>        Options: 0x52 (O, L, E)
+</span><span class='line'>        DB Description: 0x07 (I, M, MS)
+</span><span class='line'>        DD Sequence: 1863
+</span><span class='line'>    OSPF LLS Data Block</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Exchange.</strong>  Master/slave relationship has been agreed upon, and sequencing has been determined.  This state marks the beginning of the actual exchange of routing information, or Link State Adjacencies (LSAs).  DBD messages populated with LSA headers are exchanged – this header contains just enough information to uniquely identify the LSA.  This information is comprised of the LS Type, Link State ID, and Advertising router.  All DBD messages must be acknowledged, and only a single DBD message may be outstanding at a time.  In this state, the OSPF neighbors can being sending link state requests to one another.</p>
+
+<p><strong>Loading.</strong>  Link state request messages are being sent between peers, and all LSAs have been advertised.  In this state, neighbors will attempt to request all LSAs and fully synchronize local link-state databases.  Link state requests are sent, and responded to with link state updates.  A link state request is a request message for a specific LSA.</p>
+
+<p>An example of a link state request packet.  Here the request indicates the LSA desired with the LS type, Link State ID, and Advertising router fields.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Frame 295: 70 bytes on wire (560 bits), 70 bytes captured (560 bits)
+</span><span class='line'>Ethernet II, Src: Cisco_fa:bf:71 (00:16:9d:fa:bf:71), Dst: Cisco_ec:69:59 (00:15:2c:ec:69:59)
+</span><span class='line'>Internet Protocol Version 4, Src: 10.230.0.11 (10.230.0.11), Dst: 10.230.0.12 (10.230.0.12)
+</span><span class='line'>Open Shortest Path First
+</span><span class='line'>    OSPF Header
+</span><span class='line'>    Link State Request
+</span><span class='line'>        LS Type: Router-LSA (1)
+</span><span class='line'>        Link State ID: 10.99.0.12
+</span><span class='line'>        Advertising Router: 10.99.0.12 (10.99.0.12)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>An example of a link state update:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Frame 299: 110 bytes on wire (880 bits), 110 bytes captured (880 bits)
+</span><span class='line'>Ethernet II, Src: Cisco_ec:69:59 (00:15:2c:ec:69:59), Dst: Cisco_fa:bf:71 (00:16:9d:fa:bf:71)
+</span><span class='line'>Internet Protocol Version 4, Src: 10.230.0.12 (10.230.0.12), Dst: 10.230.0.11 (10.230.0.11)
+</span><span class='line'>Open Shortest Path First
+</span><span class='line'>    OSPF Header
+</span><span class='line'>    LS Update Packet
+</span><span class='line'>        Number of LSAs: 1
+</span><span class='line'>        Router-LSA
+</span><span class='line'>            .000 0000 0010 1000 = LS Age (seconds): 40
+</span><span class='line'>            0... .... .... .... = Do Not Age Flag: 0
+</span><span class='line'>            Options: 0x22 (DC, E)
+</span><span class='line'>            LS Type: Router-LSA (1)
+</span><span class='line'>            Link State ID: 10.99.0.12 (10.99.0.12)
+</span><span class='line'>            Advertising Router: 10.99.0.12 (10.99.0.12)
+</span><span class='line'>            Sequence Number: 0x8000000b
+</span><span class='line'>            Checksum: 0xb504
+</span><span class='line'>            Length: 48
+</span><span class='line'>            Flags: 0x00
+</span><span class='line'>            Number of Links: 2
+</span><span class='line'>            Type: Stub     ID: 10.99.0.12      Data: 255.255.255.255 Metric: 1
+</span><span class='line'>                Link ID: 10.99.0.12 (10.99.0.12) - IP network/subnet number
+</span><span class='line'>                Link Data: 255.255.255.255 (255.255.255.255)
+</span><span class='line'>                Link Type: 3 - Connection to a stub network
+</span><span class='line'>                Number of Metrics: 0 - TOS
+</span><span class='line'>                0 Metric: 1
+</span><span class='line'>            Type: Stub     ID: 10.230.0.0      Data: 255.255.255.0   Metric: 1
+</span><span class='line'>                Link ID: 10.230.0.0 (10.230.0.0) - IP network/subnet number
+</span><span class='line'>                Link Data: 255.255.255.0 (255.255.255.0)
+</span><span class='line'>                Link Type: 3 - Connection to a stub network
+</span><span class='line'>                Number of Metrics: 0 - TOS
+</span><span class='line'>                0 Metric: 1</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h2>Help, I'm Stuck and Cannot Get to Full!</h2>
+
+
+<p>Sometimes adjacencies will not progress to full.  This can be due to neither nodes being DR or BDR on a multiaccess segment (at which point they will both remain in 2-Way), or due to a misconfiguration.</p>
+
+<p><strong>MTU Mismatch</strong> Remember that the IP MTU is communicated between OSPF nodes in DBD packets.  Here we have a node sending a DBD packet with a MTU of 1500, the ubiquitous MTU for Ethernet segments:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Frame 287: 78 bytes on wire (624 bits), 78 bytes captured (624 bits)
+</span><span class='line'>Ethernet II, Src: Cisco_ec:69:59 (00:15:2c:ec:69:59), Dst: Cisco_fa:bf:71 (00:16:9d:fa:bf:71)
+</span><span class='line'>Internet Protocol Version 4, Src: 10.230.0.12 (10.230.0.12), Dst: 10.230.0.11 (10.230.0.11)
+</span><span class='line'>Open Shortest Path First
+</span><span class='line'>    OSPF Header
+</span><span class='line'>    OSPF DB Description
+</span><span class='line'>        Interface MTU: 1500
+</span><span class='line'>        Options: 0x52 (O, L, E)
+</span><span class='line'>        DB Description: 0x07 (I, M, MS)
+</span><span class='line'>        DD Sequence: 1863
+</span><span class='line'>    OSPF LLS Data Block</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In the case that two nodes do not utilize the same IP MTU, the adjacency state will not progress past EXSTART.</p>
+
+<p>Example of two nodes with differing IP MTUs attempting to form an adjacency (IOS):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Neighbor ID     Pri   State           Dead Time   Address         Interface
+</span><span class='line'>10.99.0.14        1   EXSTART/DR      00:00:39    10.85.0.14      FastEthernet0/0.85</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And the following debug message will be present:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Sep 21 04:51:33.941: OSPF-1 ADJ   Fa0/0.85: Nbr 10.99.0.14 has smaller interface MTU</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The fix is to either ensure both sides use the same IP MTU, or to configure <a href="http://www.cisco.com/c/en/us/td/docs/ios/12_2/iproute/command/reference/fiprrp_r/1rfospf.html#wp1049905">&ldquo;ip ospf mtu-ignore&rdquo;</a> on the interface involved.</p>
+
+<blockquote><p><em>Warning:</em> &ldquo;ip ospf mtu-ignore&rdquo; is essentially a band-aid and can cause issues with flooding of LSAs between nodes.  Keep IP MTUs consistent wherever possible.</p></blockquote>
+
+<p><strong>Authentication</strong> Clearly, OSPF adjacencies will fail to progress to full when authentication fails between nodes.  In the case of authentication failures, no state will be reached by nodes, and the following log messages may be seen:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Sep 21 05:04:26.329: OSPF-1 ADJ   Fa0/0.85: Rcv pkt from 10.85.0.14,  : Mismatched Authentication Key - Clear Text</span></code></pre></td></tr></table></div></figure>
+
+
+<p></p>
+
+<p>Or in the case that only one side is configured for authentication, the mismatch will occur on the authentication used:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Sep 21 05:04:35.593: OSPF-1 ADJ   Fa0/0.85: Rcv pkt from 10.85.0.14 : Mismatched Authentication type. Input packet specified type 1, we use type 0sh ip ospf neighbor</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The fix is to ensure all nodes using authentication are using the same type (plain-text or MD5) and have the same password string configured.</p>
+
+<p><strong>Duplicate Router IDs</strong> Pretty straightforward.  If two nodes share the same router-id, they will not form an adjacency:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Sep 21 05:10:23.145: %OSPF-4-DUP_RTRID_NBR: OSPF detected duplicate router-id 10.99.0.14 from 10.85.0.14 on interface FastEthernet0/0.85</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Mismatched Areas</strong> Staightforward again.  If nodes attempt to become adjacent over a subnet but do not agree on the area of the subnet, they will not become adjacent:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Sep 21 05:13:34.357: %OSPF-4-ERRRCV: Received invalid packet: mismatched area ID, from backbone area must be virtual-link but not found from 10.85.0.14, FastEthernet0/0.85</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Mismatched Timers</strong> Both nodes must agree on the hello and dead timers.  If these differ, the adjacency will fail to even reach INIT.  The following mesages will appear in the debug of OSPF hellos on IOS:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Sep 21 05:19:28.429: OSPF-1 HELLO Fa0/0.85: Rcv hello from 10.99.0.14 area 0 10.85.0.14
+</span><span class='line'>Sep 21 05:19:28.429: OSPF-1 HELLO Fa0/0.85: Mismatched hello parameters from 10.85.0.14
+</span><span class='line'>Sep 21 05:19:28.429: OSPF-1 HELLO Fa0/0.85: Dead R 24 C 12, Hello R 6 C 3</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h2>More</h2>
+
+
+<p>OSPF is a sophisticated protocol - it takes on some daunting computer science challenges and all without the aid of things like TCP.</p>
+
+<p>Beyond the adjacency state process lies <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">Dijkstra&rsquo;s algorithm</a> and OSPF&rsquo;s ability to have distributed nodes determine best path from the same (in most cases) database.</p>
+</div>
+
+
+  <footer class="page-footer">
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Text authored by <span class="fn">andrew@ethernaut.io</span></span>
+
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-09-07T11:07:35-04:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:07 am</span></time>
+      
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ethernaut-io.github.io/blog/2015/09/07/ospf-adjacencies/" data-via="" data-counturl="http://ethernaut-io.github.io/blog/2015/09/07/ospf-adjacencies/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/08/29/spanning-tree/" title="Previous Post: Spanning Tree">&laquo; Spanning Tree</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Website copyright &copy; 2015 - andrew@ethernaut.io |
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> | Themed with <a href="https://github.com/TheChymera/Koenigspress">Königspress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
